@@ -8,8 +8,6 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 router.post('/', async (req, res) => {
   try {
     const { query, filters } = req.body;
-    
-    // 1. Build hard filters
     let dbQuery = {};
     if (filters) {
       if (filters.category && filters.category !== 'All') {
@@ -31,8 +29,6 @@ router.post('/', async (req, res) => {
     if (candidates.length === 0) {
       return res.json({ results: [], query });
     }
-
-    // 2. Prepare Groq Prompt
     const systemPrompt = `You are a glass industry expert matching engine for AmalGus marketplace. Given a buyer's requirement and a list of glass products, analyze each product and return a JSON array with match scores and explanations. Be precise about glass specifications — thickness, certifications, coatings, and use cases matter.`;
     
     const userPrompt = `
@@ -85,8 +81,6 @@ Rank by matchScore descending. Include top 5 only. Be accurate about glass specs
         matchedAttributes: [c.category]
       }));
     }
-
-    // 3. Merge with full product data
     const finalResults = matchResults.map(match => {
       const product = candidates.find(p => p._id.toString() === match.productId.toString());
       return {

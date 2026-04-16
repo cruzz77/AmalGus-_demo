@@ -2,7 +2,6 @@ import express from 'express';
 const router = express.Router();
 import Product from '../models/Product.js';
 
-// GET all products
 router.get('/', async (req, res) => {
   try {
     const products = await Product.find();
@@ -12,7 +11,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET product by ID
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);

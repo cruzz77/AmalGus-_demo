@@ -261,7 +261,6 @@ const seedDB = async () => {
   }
 };
 
-// Only run seedDB directly if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   seedDB();
 }
