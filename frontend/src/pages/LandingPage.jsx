@@ -10,7 +10,6 @@ const LandingPage = () => {
       <Navbar />
       <Hero />
       
-      {/* Features Section */}
       <section className="py-24 px-6 relative z-30 bg-surface">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -33,7 +32,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="py-12 px-6 border-t border-white/5 text-center text-text-muted">
         <p>© 2026 AmalGus Glass Marketplace. Powered by Llama 3 & Groq.</p>
       </footer>

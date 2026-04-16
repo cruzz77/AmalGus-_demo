@@ -8,7 +8,6 @@ import ProductCard from '../components/ProductCard';
 import { PRODUCTS } from '../data/products';
 import { motion } from 'framer-motion';
 
-// Fallback client-side matching when backend is unavailable
 function clientSideMatch(query, products) {
   const q = query.toLowerCase();
   const keywords = q.split(/\s+/);
@@ -22,7 +21,6 @@ function clientSideMatch(query, products) {
       product.certification, ...(product.tags || [])
     ].join(' ').toLowerCase();
 
-    // Thickness matching
     const thicknessMatch = q.match(/(\d+)\s*mm/);
     if (thicknessMatch && product.thickness) {
       const queryThickness = parseInt(thicknessMatch[1]);
@@ -30,7 +28,6 @@ function clientSideMatch(query, products) {
       else if (Math.abs(product.thickness - queryThickness) <= 1) { score += 15; }
     }
 
-    // Category keyword matching
     const categoryMap = {
       'tempered': 'Tempered Glass', 'toughened': 'Tempered Glass',
       'laminated': 'Laminated Glass', 'safety glass': 'Laminated Glass',
@@ -44,19 +41,16 @@ function clientSideMatch(query, products) {
       if (q.includes(kw) && product.category === cat) { score += 25; matchedAttributes.push(product.category); break; }
     }
 
-    // Tag and description keyword matching
     keywords.forEach(kw => {
       if (kw.length < 3) return;
       if (productText.includes(kw)) { score += 5; }
     });
 
-    // Use case matching
     const useCases = ['partition', 'balcony', 'railing', 'window', 'facade', 'skylight', 'floor', 'roof', 'bathroom', 'office', 'residential', 'commercial', 'structural', 'canopy'];
     useCases.forEach(uc => {
       if (q.includes(uc) && productText.includes(uc)) { score += 10; matchedAttributes.push(uc); }
     });
 
-    // Special attribute matching
     if (q.includes('polished') && product.edgeFinish?.toLowerCase().includes('polished')) { score += 10; matchedAttributes.push('Polished edge'); }
     if ((q.includes('uv') || q.includes('uv protect')) && product.coating?.toLowerCase().includes('uv')) { score += 15; matchedAttributes.push('UV protection'); }
     if ((q.includes('low-e') || q.includes('energy efficient') || q.includes('leed')) && product.coating?.toLowerCase().includes('low-e')) { score += 20; matchedAttributes.push('Low-E coating'); }
@@ -65,7 +59,6 @@ function clientSideMatch(query, products) {
     if (q.includes('5+12+5') && product.name.includes('5+12+5')) { score += 40; matchedAttributes.push('5+12+5 configuration'); }
     if (q.includes('frosted') && product.color?.toLowerCase().includes('frosted')) { score += 20; matchedAttributes.push('Frosted finish'); }
 
-    // Generate explanation
     const explanation = score > 30
       ? `Matches your requirement for ${matchedAttributes.slice(0,3).join(', ')}. ${product.description.slice(0, 80)}...`
       : `Partial match — ${product.category} available from ${product.supplier}.`;
@@ -94,10 +87,10 @@ const DiscoveryPage = () => {
   });
 
   useEffect(() => {
-    // Try to fetch products from API on mount
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/products');
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const response = await axios.get(`${baseUrl}/api/products`);
         if (response.data && response.data.length > 0) {
           setAllProducts(response.data);
         }
@@ -113,15 +106,14 @@ const DiscoveryPage = () => {
     
     setIsLoading(true);
     try {
-      // 1. Try POST /api/match first
-      const response = await axios.post('http://localhost:5000/api/match', {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await axios.post(`${baseUrl}/api/match`, {
         query,
         filters
       });
       setResults(response.data.results);
     } catch (error) {
       console.error('AI Search failed, falling back to client-side matching:', error);
-      // 2. If backend call fails, fall back to CLIENT-SIDE matching
       const clientResults = clientSideMatch(query, allProducts);
       setResults(clientResults);
     } finally {
@@ -143,7 +135,6 @@ const DiscoveryPage = () => {
       
       <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
         <div className="flex flex-col gap-12">
-          {/* Header */}
           <div className="space-y-4">
             <h2 className="text-4xl font-bold text-text-primary tracking-tight">
               Intelligent <span className="text-accent">Discovery</span>
@@ -154,14 +145,12 @@ const DiscoveryPage = () => {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-12 items-start">
-            {/* Sidebar */}
             <FilterPanel 
               filters={filters} 
               setFilters={setFilters} 
               onClear={handleClearFilters}
             />
 
-            {/* Main Content */}
             <div className="flex-1 space-y-16">
               <SearchBar 
                 query={query} 
@@ -170,7 +159,6 @@ const DiscoveryPage = () => {
                 isLoading={isLoading} 
               />
 
-              {/* Best Matches Section (Conditional) */}
               {results.length > 0 && (
                 <div className="space-y-8">
                   <MatchResults 
@@ -181,7 +169,6 @@ const DiscoveryPage = () => {
                 </div>
               )}
 
-              {/* Browse All Products Section */}
               <div className="space-y-8">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-bold text-text-primary">
