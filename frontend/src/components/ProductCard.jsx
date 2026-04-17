@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, ExternalLink, Factory, Info, ShoppingCart } from 'lucide-react';
 
-const ProductCard = ({ result, isSimple = false }) => {
+const ProductCard = ({ result, isSimple = false, onQuote, onViewDetails }) => {
+  if (!result || !result.product) return null;
   const { product, matchScore, explanation, matchedAttributes } = result;
   const [offset, setOffset] = useState(100);
 
@@ -114,16 +115,21 @@ const ProductCard = ({ result, isSimple = false }) => {
       {/* Match Explanation Box (Hidden in Simple Mode) */}
       {!isSimple && (
         <div className="bg-primary/40 border border-white/5 rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="bg-accent/20 px-2 py-0.5 rounded text-[10px] font-bold text-accent">AI INSIGHT</div>
-            <div className="h-[1px] flex-1 bg-white/5"></div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="bg-accent/20 px-2 py-0.5 rounded text-[10px] font-bold text-accent">AI INSIGHT</div>
+              <div className="h-[1px] w-8 bg-white/5"></div>
+            </div>
+            <div className={`text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-full ${matchScore > 85 ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
+              {matchScore > 85 ? 'High Confidence' : 'Technical Fit'}
+            </div>
           </div>
-          <p className="text-sm text-text-primary italic leading-relaxed">
+          <p className="text-sm text-text-primary italic leading-relaxed font-medium">
             "{explanation}"
           </p>
           <div className="flex flex-wrap gap-2">
             {matchedAttributes.map((attr, idx) => (
-              <span key={idx} className="flex items-center gap-1 text-[10px] text-accent font-semibold px-2 py-0.5 bg-accent/10 rounded-full">
+              <span key={idx} className="flex items-center gap-1 text-[10px] text-accent font-semibold px-2 py-0.5 bg-accent/10 rounded-full border border-accent/20">
                 <CheckCircle size={10} /> {attr}
               </span>
             ))}
@@ -145,16 +151,25 @@ const ProductCard = ({ result, isSimple = false }) => {
         
         <div className="flex gap-2">
           {isSimple ? (
-            <button className="flex items-center gap-2 bg-white/5 text-text-primary px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-white/10 transition-all border border-white/10">
+            <button 
+              onClick={() => onViewDetails && onViewDetails(product)}
+              className="flex items-center gap-2 bg-white/5 text-text-primary px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-white/10 transition-all border border-white/10"
+            >
               <ExternalLink size={16} />
               View Details
             </button>
           ) : (
             <>
-              <button className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-text-muted transition-colors border border-white/10">
+              <button 
+                onClick={() => onViewDetails && onViewDetails(product)}
+                className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-text-muted transition-colors border border-white/10"
+              >
                 <Info size={18} />
               </button>
-              <button className="flex items-center gap-2 bg-accent text-primary px-4 py-2.5 rounded-xl font-bold text-sm hover:shadow-[0_0_15px_rgba(0,201,167,0.3)] transition-all">
+              <button 
+                onClick={() => onQuote && onQuote(product)}
+                className="flex items-center gap-2 bg-accent text-primary px-4 py-2.5 rounded-xl font-bold text-sm hover:shadow-[0_0_15px_rgba(0,201,167,0.3)] transition-all"
+              >
                 <ShoppingCart size={16} />
                 Request Quote
               </button>

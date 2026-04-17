@@ -1,10 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Spline from '@splinetool/react-spline';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Box, Shield, Users } from 'lucide-react';
+import AuthModal from './AuthModal';
 
 const Hero = () => {
+  const navigate = useNavigate();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('user') || 'null');
+  } catch (e) {
+    console.error('Error parsing user data in Hero:', e);
+  }
+
+  const handleStart = () => {
+    if (user) {
+      navigate('/discover');
+    } else {
+      setIsAuthOpen(true);
+    }
+  };
+
   return (
     <div className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-surface">
       {/* Spline Background */}
@@ -39,7 +57,7 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="text-6xl md:text-8xl font-bold mb-8 leading-[1.1] tracking-tight"
+          className="text-4xl md:text-8xl font-bold mb-6 md:mb-8 leading-[1.1] tracking-tight"
         >
           Find the Perfect Glass. <br />
           <span className="text-gradient">Instantly.</span>
@@ -49,7 +67,7 @@ const Hero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-          className="max-w-2xl mx-auto text-xl text-text-muted mb-12 leading-relaxed"
+          className="max-w-2xl mx-auto text-lg md:text-xl text-text-muted mb-8 md:mb-12 leading-relaxed"
         >
           Describe what you need in plain English. AmalGus matches you to the right glass products and verified suppliers — in seconds.
         </motion.p>
@@ -60,13 +78,13 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           className="flex flex-col sm:flex-row items-center justify-center gap-6"
         >
-          <Link
-            to="/discover"
+          <button
+            onClick={handleStart}
             className="group flex items-center gap-3 bg-accent text-primary px-8 py-4 rounded-full text-lg font-bold hover:bg-[#00e6c0] transition-all hover:shadow-[0_0_30px_rgba(0,201,167,0.4)] hover:scale-105"
           >
             Start Discovering
             <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
           
           <div className="flex flex-col items-start gap-1">
             <div className="flex -space-x-3">
@@ -84,24 +102,26 @@ const Hero = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1 }}
-          className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+          className="mt-16 md:mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 max-w-5xl mx-auto"
         >
           <div className="flex flex-col items-center gap-2">
-            <span className="text-3xl font-bold text-accent">10,000+</span>
-            <span className="text-sm text-text-muted uppercase tracking-wider">Products</span>
+            <span className="text-2xl md:text-3xl font-bold text-accent">10,000+</span>
+            <span className="text-[10px] md:text-sm text-text-muted uppercase tracking-wider">Products</span>
           </div>
-          <div className="flex flex-col items-center gap-2 border-x border-white/10">
-            <span className="text-3xl font-bold text-accent">500+</span>
-            <span className="text-sm text-text-muted uppercase tracking-wider">Verified Suppliers</span>
+          <div className="flex flex-col items-center gap-2 border-y md:border-y-0 md:border-x border-white/10 py-6 md:py-0">
+            <span className="text-2xl md:text-3xl font-bold text-accent">500+</span>
+            <span className="text-[10px] md:text-sm text-text-muted uppercase tracking-wider">Verified Suppliers</span>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <span className="text-3xl font-bold text-accent">&lt; 2s</span>
-            <span className="text-sm text-text-muted uppercase tracking-wider">AI-Matched</span>
+            <span className="text-2xl md:text-3xl font-bold text-accent">&lt; 2s</span>
+            <span className="text-[10px] md:text-sm text-text-muted uppercase tracking-wider">AI-Matched</span>
           </div>
         </motion.div>
       </div>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </div>
   );
 };
+
 
 export default Hero;

@@ -21,7 +21,7 @@ const SkeletonCard = () => (
   </div>
 );
 
-const MatchResults = ({ results, isLoading, query }) => {
+const MatchResults = ({ results, isLoading, query, detectedIntents = [], onQuote, onViewDetails }) => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
@@ -60,14 +60,27 @@ const MatchResults = ({ results, isLoading, query }) => {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-3">
-        <div className="bg-accent/20 text-accent p-2 rounded-lg">
-          <Sparkles size={20} />
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-accent/20 text-accent p-2 rounded-lg">
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-text-primary">AI Match Results</h3>
+            <p className="text-sm text-text-muted">Showing top {results.length} matches based on your requirement</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-xl font-bold text-text-primary">AI Match Results</h3>
-          <p className="text-sm text-text-muted">Showing top {results.length} matches based on your requirement</p>
-        </div>
+
+        {detectedIntents.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {detectedIntents.map(([key, intent]) => (
+              <div key={key} className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-text-primary">{key} FOCUS</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <motion.div 
@@ -75,7 +88,7 @@ const MatchResults = ({ results, isLoading, query }) => {
         className="grid grid-cols-1 xl:grid-cols-2 gap-8"
       >
         <AnimatePresence mode="popLayout">
-          {results.map((result, index) => (
+          {(results || []).map((result, index) => result && result.product && (
             <motion.div
               key={result.product._id}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -83,7 +96,7 @@ const MatchResults = ({ results, isLoading, query }) => {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: index * 0.1 }}
             >
-              <ProductCard result={result} />
+              <ProductCard result={result} onQuote={onQuote} onViewDetails={onViewDetails} />
             </motion.div>
           ))}
         </AnimatePresence>
