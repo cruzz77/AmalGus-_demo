@@ -9,7 +9,7 @@ export default {
       colors: {
         primary: "#1A1040",
         accent: "#00C9A7",
-        surface: "#0D0D1A",
+        surface: "#05050c",
         highlight: "#7B6FF0",
         glass: "rgba(255, 255, 255, 0.08)",
         "text-primary": "#F0F0FF",
