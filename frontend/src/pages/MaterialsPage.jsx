@@ -1,20 +1,138 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { DAILY_RATES, ALLIED_CATEGORIES, SERVICE_PARTNERS } from '../data/mockData';
+import { PRODUCTS } from '../data/products';
 import { 
   TrendingUp, TrendingDown, Minus, RefreshCcw, 
   Settings, Droplet, Maximize, Layout, Bath, Grid, Square, Palette,
-  UserCheck, MapPin, Star, Phone
+  UserCheck, MapPin, Star, Phone, X, Package, Ruler, Factory
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const iconMap = {
   Settings, Droplet, Maximize, Layout, Bath, Grid, Square, Palette
 };
 
+// Map Allied Categories to Product Categories
+const ALLIED_TO_PRODUCT_MAP = {
+  'cat1': 'Glass Hardware',
+  'cat3': 'Aluminium Hardware',
+  'cat7': 'Mirror',
+  'cat8': 'Decorative Glass'
+};
+
+const ProductPreviewModal = ({ isOpen, onClose, category }) => {
+  if (!category) return null;
+
+  const productCategory = ALLIED_TO_PRODUCT_MAP[category.id];
+  const relatedProducts = PRODUCTS.filter(p => p.category === productCategory);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          />
+          
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="relative w-full max-w-4xl bg-surface rounded-[32px] border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          >
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/5">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center text-accent">
+                   {React.createElement(iconMap[category.icon] || Settings, { size: 24 })}
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-text-primary capitalize">{category.name}</h2>
+                  <p className="text-xs text-text-muted">Viewing products for your project requirements</p>
+                </div>
+              </div>
+              <button 
+                onClick={onClose}
+                className="p-2.5 rounded-full bg-white/5 text-text-muted hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-8 overflow-y-auto space-y-6">
+              {relatedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {relatedProducts.map(product => (
+                    <div key={product._id} className="bg-white/5 border border-white/5 rounded-2xl p-6 hover:border-accent/30 transition-all flex flex-col justify-between">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-start">
+                          <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest">{product._id}</span>
+                          <span className="bg-accent/10 text-accent px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">In Stock</span>
+                        </div>
+                        <h4 className="font-bold text-text-primary">{product.name}</h4>
+                        <p className="text-xs text-text-muted line-clamp-2 leading-relaxed">{product.description}</p>
+                        
+                        <div className="flex flex-wrap gap-2 pt-2">
+                           {(product.tags || []).slice(0, 3).map(tag => (
+                             <span key={tag} className="text-[9px] px-2 py-0.5 bg-white/5 border border-white/10 rounded-full text-text-muted capitalize">#{tag}</span>
+                           ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+                        <div className="text-lg font-bold text-accent">
+                          {product.pricePerUnit ? `₹${product.pricePerUnit?.toLocaleString()}` : 'Contact for Quote'}
+                        </div>
+                        <button className="bg-white/5 hover:bg-accent hover:text-primary px-4 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 hover:border-accent">
+                          View Specs
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white/5 rounded-[32px] border border-dashed border-white/10">
+                  <Package size={48} className="text-text-muted mx-auto mb-4 opacity-50" />
+                  <h4 className="font-bold text-text-primary mb-2">Technical Specs Loading...</h4>
+                  <p className="text-sm text-text-muted max-w-xs mx-auto">Our database is currently updating for this specific hardware category. Please contact support for instant quotations.</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-8 bg-white/5 border-t border-white/5 flex gap-4">
+               <button onClick={onClose} className="w-full bg-accent text-primary font-black py-4 rounded-2xl uppercase tracking-widest text-xs">Close Catalogue</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const MaterialsPage = () => {
+  const [searchParams] = useSearchParams();
   const [filterCity, setFilterCity] = useState('All');
   const [lastUpdated, setLastUpdated] = useState('Today, 9:00 AM IST');
+  
+  // Modal State
+  const [selectedAlliedCat, setSelectedAlliedCat] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  useEffect(() => {
+    const categoryId = searchParams.get('category');
+    if (categoryId) {
+      const category = ALLIED_CATEGORIES.find(c => c.id === categoryId);
+      if (category) {
+        setSelectedAlliedCat(category);
+        setIsPreviewOpen(true);
+      }
+    }
+  }, [searchParams]);
 
   const cities = ['All', ...new Set(SERVICE_PARTNERS.map(p => p.city))];
   
@@ -25,6 +143,11 @@ const MaterialsPage = () => {
   const refreshRates = () => {
     const now = new Date();
     setLastUpdated(`Today, ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'} IST`);
+  };
+
+  const handleViewProducts = (cat) => {
+    setSelectedAlliedCat(cat);
+    setIsPreviewOpen(true);
   };
 
   return (
@@ -92,7 +215,10 @@ const MaterialsPage = () => {
                   </div>
                   <h3 className="text-xl font-bold text-text-primary mb-3">{cat.name}</h3>
                   <p className="text-sm text-text-muted mb-6 leading-relaxed">{cat.desc}</p>
-                  <button className="text-accent font-bold text-sm flex items-center gap-2 group/btn">
+                  <button 
+                    onClick={() => handleViewProducts(cat)}
+                    className="text-accent font-bold text-sm flex items-center gap-2 group/btn"
+                  >
                     View Products <RefreshCcw className="translate-x-0 group-hover/btn:translate-x-1 transition-transform" size={14} />
                   </button>
                 </div>
@@ -148,6 +274,13 @@ const MaterialsPage = () => {
         </section>
 
       </main>
+
+      {/* Product Preview Modal */}
+      <ProductPreviewModal 
+        isOpen={isPreviewOpen} 
+        onClose={() => setIsPreviewOpen(false)} 
+        category={selectedAlliedCat}
+      />
     </div>
   );
 };

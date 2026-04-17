@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calculator, Ruler, Factory, CheckCircle2, AlertCircle, Download, ShoppingCart, ArrowRight, RefreshCcw } from 'lucide-react';
 import { ALLIED_CATEGORIES } from '../data/mockData';
 
 const QuoteModal = ({ isOpen, onClose, product }) => {
+  const navigate = useNavigate();
   const [dimensions, setDimensions] = useState({ width: 1000, height: 1000, quantity: 1 });
   const [estimate, setEstimate] = useState(null);
   const [isOrdering, setIsOrdering] = useState(false);
@@ -255,20 +257,33 @@ const QuoteModal = ({ isOpen, onClose, product }) => {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {ALLIED_CATEGORIES.slice(0, 4).map((cat) => (
-                      <div key={cat.id} className="bg-white/5 border border-white/5 p-6 rounded-2xl hover:border-accent/40 transition-all group">
+                      <button 
+                        key={cat.id} 
+                        onClick={() => {
+                          onClose();
+                          navigate(`/materials?category=${cat.id}`);
+                        }}
+                        className="bg-white/5 border border-white/5 p-6 rounded-2xl hover:border-accent/40 hover:bg-white/10 transition-all group text-left cursor-pointer active:scale-95"
+                      >
                          <div className="text-accent mb-4 group-hover:scale-110 transition-transform">
                             <ShoppingCart size={24} />
                          </div>
                          <div className="text-sm font-bold text-text-primary mb-1">{cat.name}</div>
-                         <div className="text-[10px] text-text-muted leading-tight line-clamp-2">{cat.desc}</div>
-                      </div>
+                         <div className="text-[10px] text-text-muted leading-tight line-clamp-2 mb-4">{cat.desc}</div>
+                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent group-hover:gap-3 transition-all">
+                            View Products <RefreshCcw size={12} />
+                         </div>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                   <button 
-                    onClick={() => window.location.href = '/orders'}
+                    onClick={() => {
+                      onClose();
+                      navigate('/orders');
+                    }}
                     className="w-full sm:w-auto bg-accent text-primary px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:scale-105 transition-all"
                   >
                     View My Orders <ArrowRight size={16} />
